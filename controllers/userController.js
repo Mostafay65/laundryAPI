@@ -33,11 +33,13 @@ export const getUser = catchAsync(async (req, res, next) => {
 export const updateUser = catchAsync(async (req, res, next) => {
   const userRoleAdmin = req.user.role.includes(roles.admin);
 
-  // console.log(req);
-  if (req.body.email && !userRoleAdmin)
-    return next(new AppError("Email cannot be updated", 400));
-  if (req.body.password && !userRoleAdmin)
-    return next(new AppError("This route is not for password update.", 400));
+  if ((req.body.email || req.body.password || req.body.accountStatus) && !userRoleAdmin)
+    return next(
+      new AppError(
+        "Users aren't authorized to update email, password or account status",
+        401
+      )
+    );
 
   req.body = filterBody(
     req.body,
@@ -46,10 +48,46 @@ export const updateUser = catchAsync(async (req, res, next) => {
     "password",
     "phoneNumber",
     "bio",
-    // "location",
+    "accountStatus",
+    "location",
+    "buildingNo",
+    "floorNo",
+    "apartmentNo",
+    "buildingLockCode",
+    "securityGuardMobile",
     userRoleAdmin ? "role" : ""
   );
+
   const user = await User.findById(req.params.id);
+
+  if (req.body.location) {
+    // Create location object starting with existing data or empty object
+    const locationUpdate = user.location || {};
+
+    // Only update coordinates if provided
+    locationUpdate.coordinates = req.body.location;
+
+    // Only update each property if it's provided in the request
+    if (req.body.buildingNo !== undefined)
+      locationUpdate.buildingNo = req.body.buildingNo;
+    if (req.body.floorNo !== undefined) locationUpdate.floorNo = req.body.floorNo;
+    if (req.body.apartmentNo !== undefined)
+      locationUpdate.apartmentNo = req.body.apartmentNo;
+    if (req.body.buildingLockCode !== undefined)
+      locationUpdate.buildingLockCode = req.body.buildingLockCode;
+    if (req.body.securityGuardMobile !== undefined)
+      locationUpdate.securityGuardMobile = req.body.securityGuardMobile;
+
+    // Set the updated location object
+    req.body.location = locationUpdate;
+
+    // Remove the individual location properties from the root level
+    delete req.body.buildingNo;
+    delete req.body.floorNo;
+    delete req.body.apartmentNo;
+    delete req.body.buildingLockCode;
+    delete req.body.securityGuardMobile;
+  }
   Object.keys(req.body).forEach((key) => (user[key] = req.body[key]));
   await user.save();
   res.status(200).json({

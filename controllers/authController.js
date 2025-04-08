@@ -21,8 +21,8 @@ export const signup = catchAsync(async (req, res, next) => {
 
     const user = await User.create([filteredBody], { session });
 
-    // const verificationCode = user[0].createVerificationCode();
-    // await user[0].save({ validateBeforeSave: false });
+    const verificationCode = user[0].createVerificationCode();
+    await user[0].save({ validateBeforeSave: false });
 
     // try {
     // await new Email(user[0], verificationCode).sendVerify();
@@ -48,7 +48,7 @@ export const signup = catchAsync(async (req, res, next) => {
 });
 
 export const resendVerificationCode = catchAsync(async (req, res, next) => {
-  return next(new AppError("Waiting for developing mobile messaging service ", 400));
+  // return next(new AppError("Waiting for developing mobile messaging service ", 400));
   const { email } = req.body;
   const user = await User.findOne({ email });
 
@@ -60,7 +60,7 @@ export const resendVerificationCode = catchAsync(async (req, res, next) => {
   await user.save({ validateBeforeSave: false });
 
   try {
-    await new Email(user, verificationCode).sendVerify();
+    // await new Email(user, verificationCode).sendVerify();
 
     res.status(201).json({
       status: httpStatusText.SUCCESS,
@@ -75,6 +75,7 @@ export const resendVerificationCode = catchAsync(async (req, res, next) => {
   }
 });
 
+// update based on phone number or email
 export const verifyEmail = catchAsync(async (req, res, next) => {
   if (!req.params.code) {
     return next(new AppError("Verification code is required.", 400));
@@ -90,9 +91,9 @@ export const verifyEmail = catchAsync(async (req, res, next) => {
 
   const hashedCode = crypto.createHash("sha256").update(req.params.code).digest("hex");
 
-  if (user.verificationCode !== hashedCode || user.verificationCodeExpires < Date.now()) {
-    return next(new AppError("Verification code is invalid.", 400));
-  }
+  // if (user.verificationCode !== hashedCode || user.verificationCodeExpires < Date.now()) {
+  //   return next(new AppError("Verification code is invalid.", 400));
+  // }
 
   user.verificationCode = undefined;
   user.verificationCodeExpires = undefined;
@@ -187,7 +188,7 @@ export const forgotPassword = catchAsync(async (req, res, next) => {
   await user.save({ validateBeforeSave: false });
 
   try {
-    await new Email(user, resetCode).sendPasswordReset();
+    // await new Email(user, resetCode).sendPasswordReset();
 
     res.status(200).json({
       status: httpStatusText.SUCCESS,

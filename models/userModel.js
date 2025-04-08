@@ -49,6 +49,14 @@ const userSchema = new mongoose.Schema(
       },
       default: "awaitingVerification",
     },
+    accountStatus: {
+      type: String,
+      enum: {
+        values: ["ACTIVE", "FREEZE"],
+        message: "Status is either: ACTIVE, FREEZE.",
+      },
+      default: "ACTIVE",
+    },
     verificationCode: {
       type: String,
       select: false,
