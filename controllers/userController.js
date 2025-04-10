@@ -9,7 +9,7 @@ export const getAllUsers = catchAsync(async (req, res, next) => {
     status: "success",
     results: (await User.countDocuments()).length,
     data: {
-      users: await User.find(),
+      users: await User.find({ role: req.params.role }),
     },
   });
 });
@@ -33,7 +33,7 @@ export const getUser = catchAsync(async (req, res, next) => {
 export const updateUser = catchAsync(async (req, res, next) => {
   const userRoleAdmin = req.user.role.includes(roles.admin);
 
-  if ((req.body.email || req.body.password || req.body.accountStatus) && !userRoleAdmin)
+  if ((req.body.email || req.body.password || req.body.role || req.body.accountStatus) && !userRoleAdmin)
     return next(
       new AppError(
         "Users aren't authorized to update email, password or account status",
@@ -92,6 +92,16 @@ export const updateUser = catchAsync(async (req, res, next) => {
   await user.save();
   res.status(200).json({
     status: "success",
+  });
+});
+
+// ADMIN ONLY
+export const CreateUser = catchAsync(async (req, res, next) => {
+  const body = filterBody(req.body, "name", "email", "password", "phoneNumber", "role");
+  const user = await User.create(body);
+  res.status(201).json({
+    status: "success",
+    message: `${req.body.role.toLowerCase()} created successfully`,
   });
 });
 

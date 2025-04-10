@@ -40,12 +40,11 @@ const authorize = (...allowedRoles) =>
     //   return next(new AppError("Your email is not verified yet!.", 403));
     // }
 
-    if (allowedRoles.length !== 0 && !currentUser.role.some((role) => allowedRoles.includes(role))) {
+    if (allowedRoles.length !== 0 && !allowedRoles.includes(currentUser.role)) {
       return next(
         new AppError("You do not have permission to perform this action.", 403)
       );
     }
-
 
     req.user = currentUser;
     next();

@@ -29,17 +29,17 @@ const userSchema = new mongoose.Schema(
       validate: [validator.isMobilePhone, "Please provide a valid phone number."],
     },
     bio: String,
-    profilePicture: String,
+    // profilePicture: String,
     location: {
       type: LocationSchema,
     },
     role: {
-      type: [String],
+      type: String,
       enum: {
         values: Object.values(roles),
         message: `Role is either: ${Object.values(roles).join(", ")}.`,
       },
-      default: [roles.user],
+      default: roles.user,
     },
     emailStatus: {
       type: String,
