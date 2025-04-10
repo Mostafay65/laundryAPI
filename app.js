@@ -8,6 +8,7 @@ import globalErrorHandler from "./controllers/errorController.js";
 import AppError from "./utilities/appError.js";
 import authRouter from "./routes/authRoutes.js";
 import userRouter from "./routes/userRoutes.js";
+import itemRouter from "./routes/itemRoutes.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -25,6 +26,7 @@ app.use(express.json());
 // Routes
 app.use("/auth", authRouter);
 app.use("/users", userRouter);
+app.use("/items", itemRouter);
 
 // Undefined routes
 app.all("/", (req, res, next) => {
