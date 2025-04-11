@@ -9,7 +9,8 @@ import {
   CreateUser,
 } from "../controllers/userController.js";
 import roles from "../helpers/roles.js";
-import { set } from "mongoose";
+
+const upload = multer();
 
 const setUserId = (req, res, next) => {
   req.params.id = req.user._id;
@@ -29,7 +30,7 @@ router.use(authorize());
 router
   .route("/me")
   .get(getUser)
-  .patch(setUserId, updateUser)
+  .patch(setUserId, upload.none(), updateUser)
   .delete(setUserId, deleteUser);
 
 // Administration

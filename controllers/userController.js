@@ -33,7 +33,10 @@ export const getUser = catchAsync(async (req, res, next) => {
 export const updateUser = catchAsync(async (req, res, next) => {
   const userRoleAdmin = req.user.role.includes(roles.admin);
 
-  if ((req.body.email || req.body.password || req.body.role || req.body.accountStatus) && !userRoleAdmin)
+  if (
+    (req.body.email || req.body.password || req.body.role || req.body.accountStatus) &&
+    !userRoleAdmin
+  )
     return next(
       new AppError(
         "Users aren't authorized to update email, password or account status",
@@ -50,6 +53,7 @@ export const updateUser = catchAsync(async (req, res, next) => {
     "bio",
     "accountStatus",
     "location",
+    "area",
     "buildingNo",
     "floorNo",
     "apartmentNo",
@@ -68,6 +72,7 @@ export const updateUser = catchAsync(async (req, res, next) => {
     locationUpdate.coordinates = req.body.location;
 
     // Only update each property if it's provided in the request
+    if (req.body.area !== undefined) locationUpdate.area = req.body.area;
     if (req.body.buildingNo !== undefined)
       locationUpdate.buildingNo = req.body.buildingNo;
     if (req.body.floorNo !== undefined) locationUpdate.floorNo = req.body.floorNo;
@@ -82,6 +87,7 @@ export const updateUser = catchAsync(async (req, res, next) => {
     req.body.location = locationUpdate;
 
     // Remove the individual location properties from the root level
+    delete req.body.area;
     delete req.body.buildingNo;
     delete req.body.floorNo;
     delete req.body.apartmentNo;
