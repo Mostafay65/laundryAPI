@@ -7,6 +7,10 @@ const orderSchema = new mongoose.Schema({
     ref: "User",
     required: true,
   },
+  delivery:{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+  },
   pickUpDateFrom: {
     type: Date,
     required: true,

@@ -28,10 +28,12 @@ export const getAllOrders = catchAsync(async (req, res, next) => {
 
 // Get a single order
 export const getOrder = catchAsync(async (req, res, next) => {
-  const order = await Order.findById(req.params.id).populate({
-    path: "user",
-    select: "name email location",
-  });
+  const order = await Order.findById(req.params.id)
+    .populate({
+      path: "user",
+      select: "name email location",
+    })
+    .populate("delivery");
 
   if (!order) {
     return next(new AppError("No order found with that ID", 404));
@@ -70,7 +72,7 @@ export const createOrder = catchAsync(async (req, res, next) => {
 
 // Update a order
 export const updateOrder = catchAsync(async (req, res, next) => {
-  const adminFields = ["status", "price"];
+  const adminFields = ["status", "price", "delivery"];
   const deliveryFields = ["status"];
   const userFields = [
     "pickUpDateFrom",
@@ -81,7 +83,6 @@ export const updateOrder = catchAsync(async (req, res, next) => {
   ];
 
   // filter body
-  // spread the list of fields into the filterBody function
   req.body = filterBody(
     req.body,
     ...(req.user.role == roles.admin
