@@ -4,18 +4,25 @@ import AppError from "../utilities/appError.js";
 import orderStatus from "../helpers/orderStatus.js";
 import roles from "../helpers/roles.js";
 import filterBody from "../utilities/filterBody.js";
+import Branch from "../models/branchModel.js";
 
 // Get all orders
 export const getAllOrders = catchAsync(async (req, res, next) => {
   const filter = {};
   if (req.query.status) filter.status = req.query.status;
+  if (req.params.branchId) filter.branch = req.params.branchId;
   if (req.user.role == roles.user) filter.user = req.user._id;
-  // add filtering for delevery
+  // add filtering for delivery
 
-  const orders = await Order.find(filter).populate({
-    path: "user",
-    select: "name email location",
-  });
+  const orders = await Order.find(filter)
+    .populate({
+      path: "user",
+      select: "name email location",
+    })
+    .populate({
+      path: "branch",
+      select: "_id name location"
+    });
 
   res.status(200).json({
     status: "success",
@@ -33,7 +40,11 @@ export const getOrder = catchAsync(async (req, res, next) => {
       path: "user",
       select: "name email location",
     })
-    .populate("delivery");
+    .populate("delivery")
+    .populate({
+      path: "branch",
+      select: "_id name location workingDays"
+    });
 
   if (!order) {
     return next(new AppError("No order found with that ID", 404));
@@ -62,6 +73,32 @@ export const createOrder = catchAsync(async (req, res, next) => {
     return next(new AppError("Pick up date from must be before delivery date from", 400));
   }
 
+  // Get user location from database
+  if (!req.user.location || !req.user.location.coordinates) {
+    return next(new AppError("User location is required to assign a branch", 400));
+  }
+
+  // Find the nearest branch based on user location
+
+  const nearestBranches = await Branch.find({
+    "location.coordinates": {
+      $near: {
+        $geometry: {
+          type: "Point",
+          coordinates: req.user.location.coordinates,
+        },
+      },
+    },
+  }).limit(1);
+
+  if (nearestBranches.length === 0) {
+    return next(new AppError("No branches available to process your order", 404));
+  }
+
+  // Assign the nearest branch to the order
+  req.body.branch = nearestBranches[0]._id;
+
+  // Create the order with branch assignment
   const order = await Order.create(req.body);
 
   res.status(201).json({

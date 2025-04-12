@@ -9,6 +9,7 @@ import AppError from "./utilities/appError.js";
 import authRouter from "./routes/authRoutes.js";
 import userRouter from "./routes/userRoutes.js";
 import orderRouter from "./routes/orderRoutes.js";
+import branchRouter from "./routes/branchRoutes.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -27,6 +28,7 @@ app.use(express.json());
 app.use("/auth", authRouter);
 app.use("/users", userRouter);
 app.use("/orders", orderRouter);
+app.use("/branches", branchRouter);
 
 // Undefined routes
 app.all("/", (req, res, next) => {

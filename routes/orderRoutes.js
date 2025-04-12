@@ -9,7 +9,7 @@ import {
 import authorize from "../middleware/authorize.js";
 import roles from "../helpers/roles.js";
 
-const router = express.Router();
+const router = express.Router({ mergeParams: true });
 
 // All order routes require authentication
 router.use(authorize());
