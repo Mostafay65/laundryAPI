@@ -10,6 +10,8 @@ import authRouter from "./routes/authRoutes.js";
 import userRouter from "./routes/userRoutes.js";
 import orderRouter from "./routes/orderRoutes.js";
 import branchRouter from "./routes/branchRoutes.js";
+import notificationRouter from "./routes/notificationRoutes.js";
+import bannerRouter from "./routes/bannerRoutes.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -29,6 +31,8 @@ app.use("/auth", authRouter);
 app.use("/users", userRouter);
 app.use("/orders", orderRouter);
 app.use("/branches", branchRouter);
+app.use("/notifications", notificationRouter);
+app.use("/banners", bannerRouter);
 
 // Undefined routes
 app.all("/", (req, res, next) => {

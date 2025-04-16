@@ -12,6 +12,7 @@ export const getAllOrders = catchAsync(async (req, res, next) => {
   if (req.query.status) filter.status = req.query.status;
   if (req.params.branchId) filter.branch = req.params.branchId;
   if (req.user.role == roles.user) filter.user = req.user._id;
+  if (req.user.role == roles.delivery) filter.delivery = req.user._id;
   // add filtering for delivery
 
   const orders = await Order.find(filter)
