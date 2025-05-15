@@ -7,6 +7,7 @@ import cookieParser from "cookie-parser";
 import globalErrorHandler from "./controllers/errorController.js";
 import AppError from "./utilities/appError.js";
 import authRouter from "./routes/authRoutes.js";
+import itemRouter from "./routes/itemRoutes.js";
 import userRouter from "./routes/userRoutes.js";
 import orderRouter from "./routes/orderRoutes.js";
 import branchRouter from "./routes/branchRoutes.js";
@@ -29,6 +30,7 @@ app.use(express.json());
 // Routes
 app.use("/auth", authRouter);
 app.use("/users", userRouter);
+app.use("/items", itemRouter);
 app.use("/orders", orderRouter);
 app.use("/branches", branchRouter);
 app.use("/notifications", notificationRouter);
