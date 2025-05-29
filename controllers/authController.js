@@ -4,12 +4,11 @@ import catchAsync from "../utilities/catchAsync.js";
 import sendTokenResponse, { signToken } from "../utilities/sendTokenResponse.js";
 import filterBody from "../utilities/filterBody.js";
 import crypto from "crypto";
-import Email from "../services/emailService.js";
 import jwt from "jsonwebtoken";
 import { promisify } from "util";
 import mongoose from "mongoose";
 import httpStatusText from "../helpers/httpStatusText.js";
-import googleService from "../services/googleService.js";
+import whatsAppService from "../services/WhatsAppService.js";
 
 export const signup = catchAsync(async (req, res, next) => {
   // Start a session and transaction.
@@ -24,11 +23,7 @@ export const signup = catchAsync(async (req, res, next) => {
     const verificationCode = user[0].createVerificationCode();
     await user[0].save({ validateBeforeSave: false });
 
-    // try {
-    // await new Email(user[0], verificationCode).sendVerify();
-    // } catch {
-    //   return next(new AppError("Email sending failed. Please try again later.", 500));
-    // }
+    await whatsAppService.sendMessage(user[0].phoneNumber, verificationCode);
 
     // Commit transaction.
     await session.commitTransaction();
@@ -48,60 +43,67 @@ export const signup = catchAsync(async (req, res, next) => {
 });
 
 export const resendVerificationCode = catchAsync(async (req, res, next) => {
-  // return next(new AppError("Waiting for developing mobile messaging service ", 400));
-  const { email } = req.body;
-  const user = await User.findOne({ email });
+  const { phoneNumber } = req.body;
+  const user = await User.findOne({ phoneNumber });
 
   if (!user) {
-    return next(new AppError("User with this email address is not found.", 404));
+    return next(new AppError("User with this phone Number is not found.", 404));
   }
 
   const verificationCode = user.createVerificationCode();
   await user.save({ validateBeforeSave: false });
 
   try {
-    // await new Email(user, verificationCode).sendVerify();
+    await whatsAppService.sendMessage(user.phoneNumber, verificationCode);
 
     res.status(201).json({
       status: httpStatusText.SUCCESS,
-      message: "Verification code sent to email.",
+      message: "Verification code sent to phone number.",
     });
-  } catch {
+  } catch (err) {
     user.verificationCode = undefined;
     user.verificationCodeExpires = undefined;
     await user.save({ validateBeforeSave: false });
 
-    return next(new AppError("Email sending failed. Please try again later.", 500));
+    return next(err);
   }
 });
 
 // update based on phone number or email
-export const verifyEmail = catchAsync(async (req, res, next) => {
+export const verifyPhone = catchAsync(async (req, res, next) => {
   if (!req.params.code) {
     return next(new AppError("Verification code is required.", 400));
   }
 
-  const { email } = req.body;
-  if (!email) return next(new AppError("Email is required.", 400));
-  const user = await User.findOne({ email });
+  const { phoneNumber } = req.body;
+  if (!phoneNumber) return next(new AppError("phone number is required.", 400));
+  const user = await User.findOne({ phoneNumber }).select(
+    "+verificationCode +verificationCodeExpires"
+  );
 
-  if (!user) {
-    return next(new AppError("User with this email address is not found.", 404));
+  if (!user || user.phoneVerified) {
+    return next(
+      new AppError(
+        !user
+          ? "User with this phone number is not found."
+          : "Phone number is already verified.",
+        404
+      )
+    );
   }
-
   const hashedCode = crypto.createHash("sha256").update(req.params.code).digest("hex");
 
-  // if (user.verificationCode !== hashedCode || user.verificationCodeExpires < Date.now()) {
-  //   return next(new AppError("Verification code is invalid.", 400));
-  // }
+  if (user.verificationCode !== hashedCode || user.verificationCodeExpires < Date.now()) {
+    return next(new AppError("Verification code is invalid or expired.", 400));
+  }
 
   user.verificationCode = undefined;
   user.verificationCodeExpires = undefined;
-  user.emailStatus = "verified";
+  user.phoneVerified = true;
 
   await user.save({ validateBeforeSave: false });
 
-  sendTokenResponse(user, 200, res, "Email verified successfully.");
+  sendTokenResponse(user, 200, res, "Phone number verified successfully.");
 });
 
 export const signin = catchAsync(async (req, res, next) => {
@@ -116,14 +118,14 @@ export const signin = catchAsync(async (req, res, next) => {
     return next(new AppError("Invalid email or password.", 401));
   }
 
-  // if (user.emailStatus === "awaitingVerification") {
-  //   return next(
-  //     new AppError(
-  //       "Your email is not verified. Please check your email for the verification link.",
-  //       403
-  //     )
-  //   );
-  // }
+  if (!user.phoneVerified) {
+    return next(
+      new AppError(
+        "Your Phone is not verified. Please check your WhatsApp for the verification Code.",
+        403
+      )
+    );
+  }
 
   sendTokenResponse(user, 200, res);
 });
@@ -188,7 +190,7 @@ export const forgotPassword = catchAsync(async (req, res, next) => {
   await user.save({ validateBeforeSave: false });
 
   try {
-    // await new Email(user, resetCode).sendPasswordReset();
+    await whatsAppService.sendMessage(user.phoneNumber, resetCode);
 
     res.status(200).json({
       status: httpStatusText.SUCCESS,
@@ -199,9 +201,7 @@ export const forgotPassword = catchAsync(async (req, res, next) => {
     user.passwordResetExpires = undefined;
     await user.save({ validateBeforeSave: false });
 
-    return next(
-      new AppError("There is an error sending the email. Try again later.", 500)
-    );
+    return next(err);
   }
 });
 
@@ -219,7 +219,7 @@ export const resetPassword = catchAsync(async (req, res, next) => {
   const hashedToken = crypto.createHash("sha256").update(req.params.code).digest("hex");
 
   if (user.passwordResetToken !== hashedToken || user.passwordResetExpires < Date.now()) {
-    return next(new AppError("Code is invalid.", 400));
+    return next(new AppError("Code is invalid or expired.", 400));
   }
 
   user.password = req.body.password;

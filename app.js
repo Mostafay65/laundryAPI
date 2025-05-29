@@ -13,6 +13,7 @@ import orderRouter from "./routes/orderRoutes.js";
 import branchRouter from "./routes/branchRoutes.js";
 import notificationRouter from "./routes/notificationRoutes.js";
 import bannerRouter from "./routes/bannerRoutes.js";
+import whatsAppRouter from "./routes/whatsAppRoutes.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -35,6 +36,7 @@ app.use("/orders", orderRouter);
 app.use("/branches", branchRouter);
 app.use("/notifications", notificationRouter);
 app.use("/banners", bannerRouter);
+app.use("/whatsapp", whatsAppRouter);
 
 // Undefined routes
 app.all("/", (req, res, next) => {

@@ -35,10 +35,10 @@ const authorize = (...allowedRoles) =>
       );
     }
 
-    // Check if email got verified.
-    // if (currentUser.emailStatus !== "verified") {
-    //   return next(new AppError("Your email is not verified yet!.", 403));
-    // }
+    // Check if Phone got verified.
+    if (!currentUser.phoneVerified) {
+      return next(new AppError("Your phone is not verified yet!.", 403));
+    }
 
     if (allowedRoles.length !== 0 && !allowedRoles.includes(currentUser.role)) {
       return next(

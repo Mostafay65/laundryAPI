@@ -16,10 +16,15 @@ export const getAllBanners = catchAsync(async (req, res, next) => {
 
 // Create a banner (admin only)
 export const createBanner = catchAsync(async (req, res, next) => {
-  if (!req.file) {
-    return next(new AppError("No file uploaded", 400));
+  const { offer } = req.body;
+  const object = {};
+  if (offer) {
+    object.offer = offer;
   }
-  const banner = await Banner.create({ imageUrl: `/uploads/banners/${req.file.filename}` });
+  if (req.file) {
+    object.imageUrl = `${req.protocol}://${req.get('host')}/uploads/banners/${req.file.filename}`;
+  }
+  const banner = await Banner.create(object);
   res.status(201).json({
     status: "success",
     message: "Banner created successfully",

@@ -25,6 +25,7 @@ const userSchema = new mongoose.Schema(
     },
     phoneNumber: {
       type: String,
+      unique: true,
       required: [true, "Phone number is required."],
       validate: [validator.isMobilePhone, "Please provide a valid phone number."],
     },
@@ -41,13 +42,9 @@ const userSchema = new mongoose.Schema(
       },
       default: roles.user,
     },
-    emailStatus: {
-      type: String,
-      enum: {
-        values: ["verified", "awaitingVerification"],
-        message: "Status is either: verified, awaitingVerification.",
-      },
-      default: "awaitingVerification",
+    phoneVerified: {
+      type: Boolean,
+      default: false,
     },
     accountStatus: {
       type: String,
