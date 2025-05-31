@@ -1,4 +1,4 @@
-import whatsAppService from "../services/WhatsAppService.js";
+import whatsAppService from "../services/whatsAppService.js";
 import catchAsync from "../utilities/catchAsync.js";
 import httpStatusText from "../helpers/httpStatusText.js";
 

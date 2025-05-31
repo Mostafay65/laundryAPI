@@ -48,7 +48,8 @@ class WhatsAppService {
       this.clientInstance = await venom.create(
         "sessionName",
         async (base64Qr, asciiQR, attempts) => {
-          await saveQrWithWhiteBorder(base64Qr);
+          console.log(asciiQR);
+          // await saveQrWithWhiteBorder(base64Qr);
         },
         (statusSession) => {
           console.log("Session status:", statusSession);

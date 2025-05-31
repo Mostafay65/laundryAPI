@@ -8,7 +8,7 @@ import jwt from "jsonwebtoken";
 import { promisify } from "util";
 import mongoose from "mongoose";
 import httpStatusText from "../helpers/httpStatusText.js";
-import whatsAppService from "../services/WhatsAppService.js";
+import whatsAppService from "../services/whatsAppService.js";
 
 export const signup = catchAsync(async (req, res, next) => {
   // Start a session and transaction.
