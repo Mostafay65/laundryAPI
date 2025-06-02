@@ -104,6 +104,7 @@ export const updateUser = catchAsync(async (req, res, next) => {
 // ADMIN ONLY
 export const CreateUser = catchAsync(async (req, res, next) => {
   const body = filterBody(req.body, "name", "email", "password", "phoneNumber", "role");
+  body.phoneVerified = true;
   const user = await User.create(body);
   res.status(201).json({
     status: "success",
