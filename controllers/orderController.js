@@ -18,7 +18,7 @@ export const getAllOrders = catchAsync(async (req, res, next) => {
   const orders = await Order.find(filter)
     .populate({
       path: "user",
-      select: "name email location",
+      select: "name email location phoneNumber",
     })
     .populate({
       path: "branch",
@@ -39,7 +39,7 @@ export const getOrder = catchAsync(async (req, res, next) => {
   const order = await Order.findById(req.params.id)
     .populate({
       path: "user",
-      select: "name email location",
+      select: "name email location phoneNumber",
     })
     .populate("delivery")
     .populate({
@@ -135,7 +135,7 @@ export const updateOrder = catchAsync(async (req, res, next) => {
     runValidators: true,
   }).populate({
     path: "user",
-    select: "name email location",
+    select: "name email location phoneNumber",
   });
 
   if (!order) {
