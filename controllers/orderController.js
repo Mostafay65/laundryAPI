@@ -66,7 +66,8 @@ export const createOrder = catchAsync(async (req, res, next) => {
     "pickUpDateFrom",
     "pickUpDateTo",
     "deliveryDateFrom",
-    "deliveryDateTo"
+    "deliveryDateTo",
+    "priceOfPackage",
   );
   req.body.user = req.user._id;
 
@@ -118,6 +119,7 @@ export const updateOrder = catchAsync(async (req, res, next) => {
     "deliveryDateFrom",
     "deliveryDateTo",
     "status",
+    "priceOfPackage",
   ];
 
   // filter body

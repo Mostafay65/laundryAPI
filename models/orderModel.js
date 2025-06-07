@@ -50,6 +50,17 @@ const orderSchema = new mongoose.Schema(
         message: "price must be greater than 0",
       },
     },
+    priceOfPackage: {
+      type: Number,
+      required: false,
+      validate: {
+        validator: function (val) {
+          return val > 0;
+        },
+        message: "price of package must be greater than 0",
+      },
+      default: 0,
+    },
   },
   {
     timestamps: true,
