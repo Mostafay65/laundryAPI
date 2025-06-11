@@ -5,6 +5,7 @@ import orderStatus from "../helpers/orderStatus.js";
 import roles from "../helpers/roles.js";
 import filterBody from "../utilities/filterBody.js";
 import Branch from "../models/branchModel.js";
+import Item from "../models/itemModel.js";
 
 // Get all orders
 export const getAllOrders = catchAsync(async (req, res, next) => {
@@ -22,8 +23,9 @@ export const getAllOrders = catchAsync(async (req, res, next) => {
     })
     .populate({
       path: "branch",
-      select: "_id name location"
-    });
+      select: "_id name location",
+    })
+    .populate("items.item");
 
   res.status(200).json({
     status: "success",
@@ -44,8 +46,9 @@ export const getOrder = catchAsync(async (req, res, next) => {
     .populate("delivery")
     .populate({
       path: "branch",
-      select: "_id name location workingDays"
-    });
+      select: "_id name location workingDays",
+    })
+    .populate("items.item");
 
   if (!order) {
     return next(new AppError("No order found with that ID", 404));
@@ -67,7 +70,7 @@ export const createOrder = catchAsync(async (req, res, next) => {
     "pickUpDateTo",
     "deliveryDateFrom",
     "deliveryDateTo",
-    "priceOfPackage",
+    "priceOfPackage"
   );
   req.body.user = req.user._id;
 
@@ -111,7 +114,7 @@ export const createOrder = catchAsync(async (req, res, next) => {
 
 // Update a order
 export const updateOrder = catchAsync(async (req, res, next) => {
-  const adminFields = ["status", "price", "delivery"];
+  const adminFields = ["status", "price", "delivery", "items"];
   const deliveryFields = ["status"];
   const userFields = [
     "pickUpDateFrom",
@@ -122,7 +125,11 @@ export const updateOrder = catchAsync(async (req, res, next) => {
     "priceOfPackage",
   ];
 
-  // filter body
+  // Only admin can update items
+  if (req.body.items && req.user.role !== roles.admin) {
+    return next(new AppError("Only admin can update items in the order", 403));
+  }
+
   req.body = filterBody(
     req.body,
     ...(req.user.role == roles.admin
@@ -132,13 +139,28 @@ export const updateOrder = catchAsync(async (req, res, next) => {
       : userFields)
   );
 
+  // validate tant items presest in data base
+  if (req.body.items) {
+    for (const item of req.body.items) {
+      const itemExists = await Item.findById(item.item);
+      if (!itemExists) {
+        return next(new AppError(`Item with ID ${item.item} does not exist`, 404));
+      }
+      if (!item.quantity) {
+        return next(new AppError(`Item quantity must be provided`, 400));
+      }
+    }
+  }
+
   const order = await Order.findByIdAndUpdate(req.params.id, req.body, {
     new: true,
     runValidators: true,
-  }).populate({
-    path: "user",
-    select: "name email location phoneNumber",
-  });
+  })
+    .populate({
+      path: "user",
+      select: "name email location phoneNumber",
+    })
+    .populate("items.item");
 
   if (!order) {
     return next(new AppError("No order found with that ID", 404));
@@ -171,5 +193,30 @@ export const deleteOrder = catchAsync(async (req, res, next) => {
   res.status(204).json({
     status: "success",
     message: "Order deleted successfully",
+  });
+});
+
+// Get orders within a time range
+export const getOrdersByTimeRange = catchAsync(async (req, res, next) => {
+  const { start, end } = req.query;
+  if (!start || !end) {
+    return next(
+      new AppError("Please provide both start and end date in query parameters", 400)
+    );
+  }
+  const filter = {
+    createdAt: {
+      $gte: new Date(start),
+      $lte: new Date(end),
+    },
+  };
+  const orders = await Order.find(filter)
+    .populate({ path: "user", select: "name email location phoneNumber" })
+    .populate({ path: "branch", select: "_id name location" })
+    .populate("items.item");
+  res.status(200).json({
+    status: "success",
+    results: orders.length,
+    data: { orders },
   });
 });

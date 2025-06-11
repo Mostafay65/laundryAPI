@@ -45,9 +45,9 @@ const orderSchema = new mongoose.Schema(
       required: false,
       validate: {
         validator: function (val) {
-          return val > 0;
+          return val >= 0;
         },
-        message: "price must be greater than 0",
+        message: "price must be greater than or equal 0",
       },
     },
     priceOfPackage: {
@@ -61,6 +61,32 @@ const orderSchema = new mongoose.Schema(
       },
       default: 0,
     },
+    items: [
+      {
+        item: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Item",
+          required: true,
+        },
+        quantity: {
+          type: Number,
+          required: true,
+          validate: {
+            validator: function (val) {
+              return val > 0;
+            },
+            message: "quantity must be greater than 0",
+          },
+        },
+        serviceType: {
+          type: String,
+          enum: {
+            values: ["WashAndIron", "Iron", "DryClean"],
+            message: "service type is either 'WashAndIron', 'Iron', 'DryClean'",
+          },
+        },
+      },
+    ],
   },
   {
     timestamps: true,
