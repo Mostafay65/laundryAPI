@@ -114,7 +114,7 @@ export const createOrder = catchAsync(async (req, res, next) => {
 
 // Update a order
 export const updateOrder = catchAsync(async (req, res, next) => {
-  const adminFields = ["status", "price", "delivery", "items"];
+  const adminFields = ["status", "price", "delivery", "items", "VAT", "discount"];
   const deliveryFields = ["status"];
   const userFields = [
     "pickUpDateFrom",

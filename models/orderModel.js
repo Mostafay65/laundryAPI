@@ -61,6 +61,28 @@ const orderSchema = new mongoose.Schema(
       },
       default: 0,
     },
+    VAT: {
+      type: Number,
+      required: false,
+      validate: {
+        validator: function (val) {
+          return val >= 0 && val <= 100;
+        },
+        message: "VAT must be greater than or equal 0 and less than or equal 100",
+      },
+      default: 0,
+    },
+    discount: {
+      type: Number,
+      required: false,
+      validate: {
+        validator: function (val) {
+          return val >= 0 && val <= 100;
+        },
+        message: "discount must be greater than or equal 0 and less than or equal 100",
+      },
+      default: 0,
+    },
     items: [
       {
         item: {
