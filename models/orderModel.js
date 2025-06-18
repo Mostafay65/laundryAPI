@@ -55,7 +55,7 @@ const orderSchema = new mongoose.Schema(
       required: false,
       validate: {
         validator: function (val) {
-          return val > 0;
+          return val >= 0;
         },
         message: "price of package must be greater than 0",
       },

@@ -6,6 +6,7 @@ import roles from "../helpers/roles.js";
 import filterBody from "../utilities/filterBody.js";
 import Branch from "../models/branchModel.js";
 import Item from "../models/itemModel.js";
+import Settings from "../models/settingsModel.js";
 
 // Get all orders
 export const getAllOrders = catchAsync(async (req, res, next) => {
@@ -102,6 +103,8 @@ export const createOrder = catchAsync(async (req, res, next) => {
 
   // Assign the nearest branch to the order
   req.body.branch = nearestBranches[0]._id;
+  const settings = await Settings.findOne();
+  req.body.VAT = settings.vat;
 
   // Create the order with branch assignment
   const order = await Order.create(req.body);
