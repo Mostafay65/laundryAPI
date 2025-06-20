@@ -5,7 +5,7 @@ import AppError from "../utilities/appError.js";
 // Update VAT value (admin only)
 export const updateVAT = catchAsync(async (req, res, next) => {
   const { vat } = req.body;
-  if (!vat) {
+  if (vat === undefined) {
     return next(new AppError("VAT value is required", 400));
   }
   const settings = await Settings.findOneAndUpdate(
