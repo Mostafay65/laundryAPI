@@ -42,6 +42,7 @@ const userSchema = new mongoose.Schema(
       },
       default: roles.user,
     },
+    fireBaseToken: String,
     phoneVerified: {
       type: Boolean,
       default: false,

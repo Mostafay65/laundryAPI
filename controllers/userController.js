@@ -59,6 +59,7 @@ export const updateUser = catchAsync(async (req, res, next) => {
     "apartmentNo",
     "buildingLockCode",
     "securityGuardMobile",
+    "fireBaseToken",
     userRoleAdmin ? "role" : ""
   );
 
