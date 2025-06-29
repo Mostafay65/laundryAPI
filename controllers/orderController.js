@@ -20,7 +20,7 @@ export const getAllOrders = catchAsync(async (req, res, next) => {
   const orders = await Order.find(filter)
     .populate({
       path: "user",
-      select: "name email location phoneNumber",
+      select: "name email location phoneNumber fireBaseToken",
     })
     .populate({
       path: "branch",
@@ -42,7 +42,7 @@ export const getOrder = catchAsync(async (req, res, next) => {
   const order = await Order.findById(req.params.id)
     .populate({
       path: "user",
-      select: "name email location phoneNumber",
+      select: "name email location phoneNumber fireBaseToken",
     })
     .populate("delivery")
     .populate({
@@ -161,7 +161,7 @@ export const updateOrder = catchAsync(async (req, res, next) => {
   })
     .populate({
       path: "user",
-      select: "name email location phoneNumber",
+      select: "name email location phoneNumber fireBaseToken",
     })
     .populate("items.item");
 
@@ -214,7 +214,7 @@ export const getOrdersByTimeRange = catchAsync(async (req, res, next) => {
     },
   };
   const orders = await Order.find(filter)
-    .populate({ path: "user", select: "name email location phoneNumber" })
+    .populate({ path: "user", select: "name email location phoneNumber fireBaseToken" })
     .populate({ path: "branch", select: "_id name location" })
     .populate("items.item");
   res.status(200).json({
