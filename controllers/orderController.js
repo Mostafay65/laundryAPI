@@ -7,6 +7,7 @@ import filterBody from "../utilities/filterBody.js";
 import Branch from "../models/branchModel.js";
 import Item from "../models/itemModel.js";
 import Settings from "../models/settingsModel.js";
+import User from "../models/userModel.js";
 
 // Get all orders
 export const getAllOrders = catchAsync(async (req, res, next) => {
@@ -207,12 +208,30 @@ export const getOrdersByTimeRange = catchAsync(async (req, res, next) => {
       new AppError("Please provide both start and end date in query parameters", 400)
     );
   }
-  const filter = {
+  const { userPhone, userName } = req.query;
+  let filter = {
     createdAt: {
       $gte: new Date(start),
       $lte: new Date(end),
     },
   };
+
+  let userIds = [];
+  if (userPhone || userName) {
+    const userQuery = {};
+    if (userPhone) userQuery.phoneNumber = userPhone;
+    if (userName) userQuery.name = userName;
+    const users = await User.find(userQuery).select("_id");
+    userIds = users.map((u) => u._id);
+    if (userIds.length === 0) {
+      // No users found, so no orders will match
+      return res
+        .status(200)
+        .json({ status: "success", results: 0, data: { orders: [] } });
+    }
+    filter.user = { $in: userIds };
+  }
+
   const orders = await Order.find(filter)
     .populate({ path: "user", select: "name email location phoneNumber fireBaseToken" })
     .populate({ path: "branch", select: "_id name location" })

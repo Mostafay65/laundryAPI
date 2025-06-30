@@ -11,35 +11,19 @@ import httpStatusText from "../helpers/httpStatusText.js";
 import whatsAppService from "../services/whatsAppService.js";
 
 export const signup = catchAsync(async (req, res, next) => {
-  // Start a session and transaction.
-  const session = await mongoose.startSession();
-  session.startTransaction();
+  const filteredBody = filterBody(req.body, "name", "email", "phoneNumber", "password");
 
-  try {
-    const filteredBody = filterBody(req.body, "name", "email", "phoneNumber", "password");
+  const user = await User.create([filteredBody]);
 
-    const user = await User.create([filteredBody], { session });
+  const verificationCode = user[0].createVerificationCode();
+  await user[0].save({ validateBeforeSave: false });
 
-    const verificationCode = user[0].createVerificationCode();
-    await user[0].save({ validateBeforeSave: false });
+  whatsAppService.sendMessage(user[0].phoneNumber, verificationCode);
 
-    await whatsAppService.sendMessage(user[0].phoneNumber, verificationCode);
-
-    // Commit transaction.
-    await session.commitTransaction();
-    session.endSession();
-
-    res.status(201).json({
-      status: httpStatusText.SUCCESS,
-      message: "User signed up!",
-    });
-  } catch (err) {
-    // Abort transaction
-    await session.abortTransaction();
-    session.endSession();
-
-    return next(err);
-  }
+  res.status(201).json({
+    status: httpStatusText.SUCCESS,
+    message: "User signed up! check your phone number for verification code.",
+  });
 });
 
 export const resendVerificationCode = catchAsync(async (req, res, next) => {
