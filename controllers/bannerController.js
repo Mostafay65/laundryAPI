@@ -16,13 +16,23 @@ export const getAllBanners = catchAsync(async (req, res, next) => {
 
 // Create a banner (admin only)
 export const createBanner = catchAsync(async (req, res, next) => {
-  const { offer } = req.body;
+  const { arabicOffer, englishOffer } = req.body;
   const object = {};
-  if (offer) {
-    object.offer = offer;
+  if (arabicOffer) {
+    object.arabicOffer = arabicOffer;
   }
-  if (req.file) {
-    object.imageUrl = `${req.protocol}://${req.get('host')}/uploads/banners/${req.file.filename}`;
+  if (englishOffer) {
+    object.englishOffer = englishOffer;
+  }
+  if (req.files.arabicImage) {
+    object.arabicImageUrl = `${req.protocol}://${req.get("host")}/uploads/banners/${
+      req.files.arabicImage[0].filename
+    }`;
+  }
+  if (req.files.englishImage) {
+    object.englishImageUrl = `${req.protocol}://${req.get("host")}/uploads/banners/${
+      req.files.englishImage[0].filename
+    }`;
   }
   const banner = await Banner.create(object);
   res.status(201).json({

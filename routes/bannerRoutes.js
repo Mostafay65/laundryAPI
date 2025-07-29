@@ -16,7 +16,14 @@ router.get("/", getAllBanners);
 // Protected routes - only authenticated users with admin role can modify banners
 router.use(authorize(roles.admin));
 
-router.post("/", upload.single("image"), createBanner);
+router.post(
+  "/",
+  upload.fields([
+    { name: "arabicImage", maxCount: 1 },
+    { name: "englishImage", maxCount: 1 },
+  ]),
+  createBanner
+);
 router.delete("/:id", deleteBanner);
 
 export default router;

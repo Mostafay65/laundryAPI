@@ -1,13 +1,17 @@
 import mongoose from "mongoose";
 
 const bannerSchema = new mongoose.Schema({
-  imageUrl: {
+  arabicImageUrl: {
     type: String,
-    // required: [true, "Banner image URL is required."],
   },
-  offer: {
+  englishImageUrl: {
     type: String,
-    // required: [true, "Banner offer is required."],
+  },
+  arabicOffer: {
+    type: String,
+  },
+  englishOffer: {
+    type: String,
   },
   createdAt: {
     type: Date,
