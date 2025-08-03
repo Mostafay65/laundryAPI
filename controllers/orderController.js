@@ -72,7 +72,8 @@ export const createOrder = catchAsync(async (req, res, next) => {
     "pickUpDateTo",
     "deliveryDateFrom",
     "deliveryDateTo",
-    "priceOfPackage"
+    "priceOfPackage",
+    "itemsType"
   );
   req.body.user = req.user._id;
 
@@ -118,7 +119,15 @@ export const createOrder = catchAsync(async (req, res, next) => {
 
 // Update a order
 export const updateOrder = catchAsync(async (req, res, next) => {
-  const adminFields = ["status", "price", "delivery", "items", "VAT", "discount"];
+  const adminFields = [
+    "status",
+    "price",
+    "delivery",
+    "items",
+    "VAT",
+    "discount",
+    "itemsType",
+  ];
   const deliveryFields = ["status"];
   const userFields = [
     "pickUpDateFrom",
@@ -127,6 +136,7 @@ export const updateOrder = catchAsync(async (req, res, next) => {
     "deliveryDateTo",
     "status",
     "priceOfPackage",
+    "itemsType",
   ];
 
   // Only admin can update items
@@ -186,7 +196,7 @@ export const deleteOrder = catchAsync(async (req, res, next) => {
 
   // Check if user is authorized to delete this order
   if (
-    !req.user.role.includes("admin") &&
+    req.user.role !== roles.admin ||
     order.user.toString() !== req.user._id.toString()
   ) {
     return next(new AppError("You are not authorized to delete this order", 403));

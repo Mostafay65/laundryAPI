@@ -109,6 +109,14 @@ const orderSchema = new mongoose.Schema(
         },
       },
     ],
+    itemsType: {
+      type: String,
+      enum: {
+        values: ["clothes", "blanket", "carpet"],
+        message: "items type is either 'clothes', 'blanket', 'carpet'",
+        default: "clothes",
+      },
+    },
   },
   {
     timestamps: true,
