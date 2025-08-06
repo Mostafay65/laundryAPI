@@ -2,9 +2,24 @@ import Notification from "../models/notificationModel.js";
 import catchAsync from "../utilities/catchAsync.js";
 import AppError from "../utilities/appError.js";
 
+// Get all notifications for a user
+export const getUserNotifications = catchAsync(async (req, res, next) => {
+  const notifications = await Notification.find({ user: req.user._id }).populate("user");
+  if (!notifications) {
+    return next(new AppError("No notifications found", 404));
+  }
+  res.status(200).json({
+    status: "success",
+    results: notifications.length,
+    data: {
+      notifications,
+    },
+  });
+});
+
 // Get all notifications
 export const getAllNotifications = catchAsync(async (req, res, next) => {
-  const notifications = await Notification.find();
+  const notifications = await Notification.find().populate("user");
   res.status(200).json({
     status: "success",
     results: notifications.length,
