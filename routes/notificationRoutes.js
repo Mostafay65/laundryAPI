@@ -15,7 +15,7 @@ router.get("/", getAllNotifications);
 router.get("/user", authorize(), getUserNotifications);
 
 // Protected routes - only authenticated users with admin role can modify notifications
-router.use(authorize(roles.admin));
+router.use(authorize(roles.admin, roles.delivery));
 
 router.post("/", createNotification);
 router.delete("/:id", deleteNotification);
